@@ -15639,7 +15639,17 @@ def _ws_client_reason(ws: "WebSocket") -> Optional[str]:
     return f"peer_not_loopback peer={client_host} bound={bound_host or '?'}"
 
 
-def _ws_client_is_allowed(ws: "WebSocket") -> bool:
+def _ws_is_forwarded_public_https(ws: "WebSocket") -> bool:
+    """Return True for an HTTPS WebSocket forwarded by a TLS edge.
+
+    This is only used after the dashboard WS credential is accepted. The
+    Host/Origin guard remains mandatory, so this does not bypass auth.
+    """
+    forwarded_proto = ws.headers.get("x-forwarded-proto", "").split(",", 1)[0].strip().lower()
+    return forwarded_proto == "https"
+
+
+def _ws_client_is_allowed(ws: "WebSocket", *, authenticated: bool = False) -> bool:
     """Check if the WebSocket client IP is acceptable.
 
     Loopback bind: only loopback clients allowed — the legacy
@@ -15673,9 +15683,10 @@ def _ws_client_is_allowed(ws: "WebSocket") -> bool:
     bound_host = (getattr(app.state, "bound_host", "") or "").strip().lower()
     if bound_host and bound_host not in _LOOPBACK_HOSTS:
         return True
+    if authenticated and _ws_is_forwarded_public_https(ws):
+        return True
     client_host = ws.client.host if ws.client else ""
     if not client_host:
-        # Fail-closed: see _ws_client_reason for rationale. An empty
         # client_host on a loopback-bound dashboard with auth disabled
         # must be rejected, not accepted as a default-allow.
         return False
@@ -15733,9 +15744,11 @@ def _ws_request_reason(ws: "WebSocket") -> Optional[str]:
     return _ws_host_origin_reason(ws) or _ws_client_reason(ws)
 
 
-def _ws_request_is_allowed(ws: "WebSocket") -> bool:
+def _ws_request_is_allowed(ws: "WebSocket", *, authenticated: bool = False) -> bool:
     """Return True when the WebSocket upgrade matches dashboard boundaries."""
-    return _ws_host_origin_is_allowed(ws) and _ws_client_is_allowed(ws)
+    return _ws_host_origin_is_allowed(ws) and _ws_client_is_allowed(
+        ws, authenticated=authenticated
+    )
 
 
 def _ws_auth_mode() -> str:
@@ -16760,7 +16773,9 @@ async def pty_ws(ws: WebSocket) -> None:
         return
 
     client_reason = _ws_client_reason(ws)
-    if client_reason is not None:
+    if client_reason is not None and not (
+        auth_reason is None and _ws_is_forwarded_public_https(ws)
+    ):
         _log.warning("pty refused: %s", client_reason)
         await ws.close(code=4408, reason=_ws_close_reason(client_reason))
         return
@@ -16928,7 +16943,7 @@ async def gateway_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
-    if not _ws_request_is_allowed(ws):
+    if not _ws_request_is_allowed(ws, authenticated=True):
         await ws.close(code=4403)
         return
 
@@ -16959,7 +16974,7 @@ async def pub_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
-    if not _ws_request_is_allowed(ws):
+    if not _ws_request_is_allowed(ws, authenticated=True):
         await ws.close(code=4403)
         return
 
@@ -16987,7 +17002,7 @@ async def events_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
-    if not _ws_request_is_allowed(ws):
+    if not _ws_request_is_allowed(ws, authenticated=True):
         await ws.close(code=4403)
         return
 
