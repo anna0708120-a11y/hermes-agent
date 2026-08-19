@@ -5,19 +5,17 @@ services:
     runtime: python
     plan: starter
     buildCommand: uv sync --frozen --extra web
-    startCommand: uv run hermes dashboard --host 0.0.0.0 --port $PORT --no-open
-    healthCheckPath: /api/status
+    startCommand: uv run hermes gateway run --no-supervise
+    healthCheckPath: /v1/models
     envVars:
-      - key: HERMES_DASHBOARD_BASIC_AUTH_USERNAME
+      - key: API_SERVER_ENABLED
+        value: "true"
+      - key: API_SERVER_HOST
+        value: 0.0.0.0
+      - key: API_SERVER_PORT
+        value: "$PORT"
+      - key: API_SERVER_KEY
         sync: false
-      - key: HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
-        sync: false
-      - key: HERMES_DASHBOARD_BASIC_AUTH_SECRET
-        sync: false
-      - key: HERMES_DASHBOARD_PUBLIC_URL
-        sync: false
-      - key: HERMES_WEB_ONLY
-        value: "1"
       - key: HERMES_HOME
         value: /var/data/hermes
     disk:
