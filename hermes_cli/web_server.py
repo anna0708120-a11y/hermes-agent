@@ -514,13 +514,12 @@ def _apply_ssh_owner_nonce(nonce: Optional[str]) -> None:
     global _SSH_OWNER_NONCE
     _SSH_OWNER_NONCE = nonce
 
-# In-browser Chat tab (/chat, /api/pty, /api/ws, …).  Always enabled: the
-# desktop app and the dashboard's own Chat tab both drive the agent over the
-# `/api/ws` + `/api/pty` WebSockets, so the embedded-chat surface is an
-# unconditional part of the dashboard.  Kept as a module-level constant (rather
-# than inlining ``True`` at every gate) so the WS endpoints and the SPA token
-# injection share a single, testable seam.
-_DASHBOARD_EMBEDDED_CHAT_ENABLED = True
+# In-browser Chat tab (/chat, /api/pty, /api/ws, …). It normally remains
+# enabled for Desktop and local dashboards. Hosted management deployments can
+# set HERMES_WEB_ONLY=1 to serve the dashboard without spawning an embedded
+# terminal/TUI process on the first Chat connection. The WS gates and SPA flag
+# share this one value so the disabled surface never reaches _make_tui_argv().
+_DASHBOARD_EMBEDDED_CHAT_ENABLED = os.environ.get("HERMES_WEB_ONLY") != "1"
 
 # Desktop's file.attach compatibility transport sends a complete base64 data
 # URL in one JSON-RPC frame. Uvicorn defaults to 16 MiB, which rejects files at

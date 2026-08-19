@@ -1,10 +1,8 @@
 declare global {
   interface Window {
     /**
-     * Injected by the server as `true`. The embedded TUI Chat surface
-     * (`/chat`, `/api/ws`, `/api/pty`) is always enabled, so this is
-     * effectively a constant; kept on `window` for any consumer that reads
-     * it directly and for parity with the server's bootstrap script.
+     * Injected by the server before the dashboard bundle loads. It controls
+     * whether the embedded TUI Chat surface is available for this deployment.
      */
     __HERMES_DASHBOARD_EMBEDDED_CHAT__?: boolean;
   }
@@ -13,12 +11,10 @@ declare global {
 /**
  * Whether the dashboard's embedded TUI Chat surface is available.
  *
- * The embedded chat (`/chat` tab, `/api/ws` + `/api/pty` WebSockets) is now
- * an unconditional part of the dashboard — the desktop app and the in-browser
- * Chat tab both depend on it — so this always returns `true`. The function is
- * retained as a stable seam so call sites don't need to change if the surface
- * ever becomes conditional again.
+ * The server defaults this feature to enabled. Hosted management deployments
+ * can set HERMES_WEB_ONLY=1, which injects false and prevents the SPA from
+ * mounting the PTY-backed Chat route.
  */
 export function isDashboardEmbeddedChatEnabled(): boolean {
-  return true;
+  return window.__HERMES_DASHBOARD_EMBEDDED_CHAT__ !== false;
 }
