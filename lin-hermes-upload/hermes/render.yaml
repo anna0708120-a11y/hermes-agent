@@ -16,6 +16,8 @@ services:
         sync: false
       - key: HERMES_DASHBOARD_PUBLIC_URL
         sync: false
+      - key: HERMES_WEB_ONLY
+        value: "1"
       - key: HERMES_HOME
         value: /var/data/hermes
     disk:
