@@ -1796,6 +1796,7 @@ wake = [
     { name = "sounddevice" },
 ]
 web = [
+    { name = "aiohttp" },
     { name = "fastapi" },
     { name = "python-multipart" },
     { name = "starlette" },
@@ -1818,6 +1819,7 @@ requires-dist = [
     { name = "aiohttp", marker = "extra == 'slack'", specifier = "==3.14.3" },
     { name = "aiohttp", marker = "extra == 'sms'", specifier = "==3.14.3" },
     { name = "aiohttp", marker = "extra == 'teams'", specifier = "==3.14.3" },
+    { name = "aiohttp", marker = "extra == 'web'", specifier = "==3.14.3" },
     { name = "aiohttp-socks", marker = "extra == 'matrix'", specifier = "==0.11.0" },
     { name = "aiosqlite", marker = "extra == 'matrix'", specifier = "==0.22.1" },
     { name = "alibabacloud-dingtalk", marker = "extra == 'dingtalk'", specifier = "==2.2.42" },
