@@ -29,6 +29,13 @@ fi
 # api_server 平台会被判成 general。这台服务就是 Lin 的写代码沙盒，强制启用。
 hermes config set agent.coding_context on
 
+# Ponytail 技能族（写代码的懒人规矩）：~/.hermes 在免费实例上会被清空，
+# 所以技能随仓库走，每次启动软链到 Hermes 的技能目录。
+for _skill in "$ROOT"/skills/ponytail-suite/*/; do
+    [ -d "$_skill" ] || continue
+    ln -sfn "$_skill" "$HERMES_HOME/skills/$(basename "$_skill")" 2>/dev/null || true
+done
+
 # 免费实例保活：每 10 分钟打一次自己的公网 URL，让 Render 判成"有入站流量"→ 不睡，
 # $HERMES_HOME 里的 session/记忆才留得住。
 # 必须是公网地址：Render 的入站流量判定在它的代理层，打 localhost 不算。
