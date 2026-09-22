@@ -25,9 +25,9 @@ if [ -n "${Toolsets:-}" ]; then
     hermes config set platform_toolsets.api_server "$Toolsets"
 fi
 
-# 写代码人格：coding posture 默认只在交互式平台（cli/tui/desktop）激活，
-# api_server 平台会被判成 general。这台服务就是 Lin 的写代码沙盒，强制启用。
-hermes config set agent.coding_context on
+# 写代码人格 + 瘦身：coding posture 默认只在交互式平台激活，api_server 被判成
+# general，强制启用；focus 模式把技能索引里非编码类目压成只列名字（省请求体）。
+hermes config set agent.coding_context focus
 
 # Ponytail 技能族（写代码的懒人规矩）：~/.hermes 在免费实例上会被清空，
 # 所以技能随仓库走，每次启动软链到 Hermes 的技能目录。
