@@ -25,6 +25,10 @@ if [ -n "${Toolsets:-}" ]; then
     hermes config set platform_toolsets.api_server "$Toolsets"
 fi
 
+# 写代码人格：coding posture 默认只在交互式平台（cli/tui/desktop）激活，
+# api_server 平台会被判成 general。这台服务就是 Lin 的写代码沙盒，强制启用。
+hermes config set agent.coding_context on
+
 # 免费实例保活：每 10 分钟打一次自己的公网 URL，让 Render 判成"有入站流量"→ 不睡，
 # $HERMES_HOME 里的 session/记忆才留得住。
 # 必须是公网地址：Render 的入站流量判定在它的代理层，打 localhost 不算。
