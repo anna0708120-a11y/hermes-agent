@@ -18,6 +18,13 @@ mkdir -p "$HERMES_HOME"
 if [ -n "${Provider:-}" ]; then hermes config set model.provider "$Provider"; fi
 if [ -n "${Model:-}" ]; then hermes config set model.default "$Model"; fi
 
+# 工具集瘦身：API server 默认工具集塞了 50+ 个工具的 schema，全进每次请求体，
+# Groq 免费档直接 413。这里只留写代码沙盒要用的：终端/进程/文件 + 技能 + 代码执行。
+# 想恢复全量：把 Toolsets env 设为 all，或删掉这段。
+if [ -n "${Toolsets:-}" ]; then
+    hermes config set platform_toolsets.api_server "$Toolsets"
+fi
+
 # 免费实例保活：每 10 分钟打一次自己的公网 URL，让 Render 判成"有入站流量"→ 不睡，
 # $HERMES_HOME 里的 session/记忆才留得住。
 # 必须是公网地址：Render 的入站流量判定在它的代理层，打 localhost 不算。
