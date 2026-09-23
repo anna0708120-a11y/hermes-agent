@@ -44,6 +44,9 @@ EOF
 #    提示词，Groq 直接 413）。写入 .no-bundled-skills 关掉全量灌入，只保留我们
 #    软链的 6 个 ponytail 技能——索引从 16KB 缩到 ~1KB。
 touch "$HERMES_HOME/.no-bundled-skills"
+# 清掉上次启动可能全量同步进来的旧技能（88 个内置技能残留会把索引撑回 16KB → 413/429）。
+# 保留目录本身；符号链接会在下面重建。
+find "$HERMES_HOME/skills" -mindepth 1 -maxdepth 1 ! -name '.*' -exec rm -rf {} + 2>/dev/null || true
 for _skill in "$ROOT"/skills/ponytail-suite/*/; do
     [ -d "$_skill" ] || continue
     ln -sfn "$_skill" "$HERMES_HOME/skills/$(basename "$_skill")" 2>/dev/null || true
