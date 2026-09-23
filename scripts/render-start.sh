@@ -25,6 +25,10 @@ if [ -n "${Toolsets:-}" ]; then
     hermes config set platform_toolsets.api_server "$Toolsets"
 fi
 
+# 再砍一刀：bfl（视频生成,6 个工具 ~2000 tokens）是"新上工具"自动加开的，
+# 显式禁掉；skill_manage（1.1K tokens）也砍——Lin 只需要读技能,不需要管技能。
+hermes config set agent.disabled_toolsets '["bfl", "skill_manage"]'
+
 # 写代码人格 + 瘦身：
 # 1) coding posture 默认只在交互式平台激活，api_server 被判成 general，用 on 强制。
 # 2) SOUL.md（默认人格文件，安装在免费实例上会生成一大份）每次启动替换成一段
